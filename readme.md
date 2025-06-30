@@ -47,6 +47,9 @@ so someone had to dive into it.
 1. `python3 patch_7378.py`
 2. Feed `cbb_7378_patched.bin` into the ECC builder of your choice.
 
+Alternatively, you can use `elpis_glitch2.ecc` with J-Runner by selecting Nand -> Load Glitch2 XeLL.
+Remember to back up your NAND first!
+
 ## Okay, cool. When can we expect this to be widely supported/added to J-Runner?
 
 When enough people test it and any bugs that exist are fixed. I only have one Elpis, and thank the good
@@ -60,6 +63,10 @@ Expect slow boots. Elpis boards are the slowest to boot with EXT_CLK, so it may 
 for your board to boot. Careful wire routing and the use of 192 MHz timing files are recommended here.
 I tested this using [pigli360](https://github.com/wurthless-elektroniks/pigli360), and even with speedup
 hacks it doesn't boot anywhere as fast as a normal Xenon.
+
+After a stable version of the hack was made, I tested on a Matrix glitcher with Octal450's EXT_CLK timing
+files. In this case, it performs around the same as a normal Xenon, in that you can get instaboots but it
+can take several tries before you get a successful boot.
 
 Also, remember to replace the CPU power rail capacitors if they're failing. Microsoft didn't bother
 replacing them when they serviced the boards.
