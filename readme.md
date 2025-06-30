@@ -7,6 +7,8 @@ Finally this stupid Xbox 360 revision can be modded.
 This is in an experimental/early stage. Bugs still need to be fixed. You can try it on your system, but I can't guarantee it works in
 a real-world scenario.
 
+**THIS DOES NOT SUPPORT XEBUILD YET!** It crashes if you try. It is only useful for loading XeLL right now.
+
 ## Why doesn't Elpis work with EXT_CLK right now?
 
 CB_B 9188, which current Glitch2 images use, does not support Elpis boards with Samsung SDRAMs.
