@@ -18,7 +18,7 @@ in the HWINIT configuration list, the format of which hasn't been reverse engine
 Reasons nobody has bothered to support Elpis in RGH scenarios include:
 
 - It's a specific hardware revision that is far less desirable than other boards
-- It still has Xenon-related headaches, including high power consumption and failed CPU rail caps
+- It still has Xenon-related headaches, including high power consumption, no HDMI support, and failed CPU rail caps
 - RGH is slow or useless on Xenon boards so people assumed it would be slow on Elpis too
 - Even after EXT_CLK was released, people found that Elpis boards were the slowest Waternoose-based board to glitch
 
