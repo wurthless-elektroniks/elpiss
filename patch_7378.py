@@ -188,6 +188,28 @@ def fill_nops_between(cbb_image: bytes, address: int, until_address: int):
 
 # ------------------------------------------------------------------------------------------------
 
+def make_post_codecave(cbb_image: bytes,
+                       free_space_area: FreeSpaceArea,
+                       insert_address: int,
+                       post_code: int) -> bytes:
+    assert_address_32bit_aligned(insert_address)
+    post_fcn_address = free_space_area.func("post")
+
+    # read instruction we're about to overwrite
+    old_instruction = cbb_image[insert_address:insert_address+4]
+
+    # assemble codecave in free space area
+    pos = free_space_area.head()
+    codecave_pos = pos
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, post_code)
+    cbb_image[pos:pos+4] = old_instruction
+    pos += 4
+    cbb_image, pos = assemble_branch(cbb_image, pos, insert_address + 4)
+    free_space_area.create_func_and_set_head(f"post_{post_code:02x}_codecave", pos)
+    cbb_image, _ = assemble_branch(cbb_image, insert_address, codecave_pos)
+
+    return cbb_image
+
 def patch_entry_point(cbb_image: bytes, free_space_area: FreeSpaceArea) -> bytes:
     # 0x4E8: call to fusechecks and security engine init
     # we remove the call to fusechecks and instead use this area to POST 0x22 and 0x2F.
@@ -244,6 +266,10 @@ def patch_cd_load_and_jump(cbb_image: bytes, free_space_area: FreeSpaceArea) -> 
     post_fcn_address  = free_space_area.func("post")
     panic_fcn_address = free_space_area.func("panic")
 
+    # put POST 0x30 (VERIFY_OFFSET_4BL) at 0x7388
+    # this isn't always validated, so it may be normal if you don't see 0x30 before 0x31
+    cbb_image = make_post_codecave(cbb_image, free_space_area, 0x7388, 0x30)
+
     # 0x73a4: panic because of invalid offset (POST 0xAA)
     # build function stub in free space then put a branch at 0x73A4
     pos = free_space_area.head()
@@ -251,6 +277,9 @@ def patch_cd_load_and_jump(cbb_image: bytes, free_space_area: FreeSpaceArea) -> 
     cbb_image, pos = assemble_panic(cbb_image, pos, 0xAA, panic_fcn_address)
     cbb_image, _ = assemble_branch(cbb_image, 0x73A4, panic_aa_stub)
     free_space_area.create_func_and_set_head("panic_aa_stub", pos)
+
+    # create codecave so we can POST 0x31
+    cbb_image = make_post_codecave(cbb_image, free_space_area, 0x73A8, 0x31)
 
     # put POST 0x32 at 0x73c0
     assemble_post_call(cbb_image, 0x73c0, post_fcn_address, 0x32)
@@ -267,21 +296,21 @@ def patch_cd_load_and_jump(cbb_image: bytes, free_space_area: FreeSpaceArea) -> 
     cbb_image, _ = assemble_branch(cbb_image, 0x7430, panic_ab_stub)
     free_space_area.create_func_and_set_head("panic_ab_stub", pos)
 
-    # at 0x745c, CD has been copied to RAM.
-    # send POST 0x39 and jump directly to 0x758C.
-    # glitchers expect 0x34,0x35,0x36,0x37... but the boot can fail here
-    pos = 0x745C
-    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x39)
-    # cbb_image, pos = assemble_branch(cbb_image, pos, 0x758C)
+    # create codecave so we can POST 0x33
+    cbb_image = make_post_codecave(cbb_image, free_space_area, 0x7434, 0x33)
 
-    # small trampoline so we can POST 0x3B before calling pci_init
-    # pciinit_trampoline = pos
+    # at 0x745c, CD has been copied to RAM.
+    # all we need to do is count POSTs 34-37,39 and then go directly to PCI init
+    # because HMAC/SHA verification is no longer necessary
+    pos = 0x745C
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x34)
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x35)
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x36)
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x37)
+    cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x39)
     cbb_image, pos = assemble_post_call(cbb_image, pos, post_fcn_address, 0x3B)
     cbb_image, pos = assemble_branch_with_link(cbb_image, pos, 0x71a0) # call pci_init
     cbb_image, pos = assemble_branch(cbb_image, pos, 0x75cc) # return to code below
-
-    # 0x75c8: this is the call to pci_init, so jump to our trampoline code
-    # cbb_image, _ = assemble_branch(cbb_image, 0x75c8, pciinit_trampoline)
 
     # 0x75cc - 0x762c follows pci_init and is useless for our purposes.
     # it's useful if you're calling a normal CD, but we're calling the exploit
@@ -290,6 +319,7 @@ def patch_cd_load_and_jump(cbb_image: bytes, free_space_area: FreeSpaceArea) -> 
     # (we won't be using r5/r6 when patching cd_jump.)
     cbb_image, _ = assemble_branch(cbb_image, 0x75CC, 0x762C)
     cbb_image, _ = assemble_post_call(cbb_image, 0x762C, post_fcn_address, 0x3A)
+
 
     return cbb_image
 
@@ -366,7 +396,7 @@ def do_patches(cbb_image: bytes) -> bytes:
     patch_cd_jump(cbb_image)
 
     # vanity string at end of free space
-    vanity_string = b"wurthless elektroniks presents elpiss v1\x00"
+    vanity_string = b"wurthless elektroniks presents elpiss v2\x00"
     head = free_space_area.head()
     cbb_image[head:head+len(vanity_string)] = vanity_string
 
