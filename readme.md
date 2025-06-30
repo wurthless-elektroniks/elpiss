@@ -46,11 +46,18 @@ so someone had to dive into it.
 
 ## How do I use it?
 
+### Building
+
 1. `python3 patch_7378.py`
 2. Feed `cbb_7378_patched.bin` into the ECC builder of your choice.
 
-Alternatively, you can use `elpis_glitch2.ecc` with J-Runner by selecting Nand -> Load Glitch2 XeLL.
-Remember to back up your NAND first!
+### XeLL image
+
+Use `elpis_glitch2.ecc` with J-Runner by selecting Nand -> Load Glitch2 XeLL. Remember to back up your NAND first!
+
+### XeBuild
+
+Not done yet. The patch is still a work in progress. If you try using the patched 7378, it will crash.
 
 ## Okay, cool. When can we expect this to be widely supported/added to J-Runner?
 
