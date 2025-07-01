@@ -9,7 +9,7 @@ We can't skip the fusecheck and decryption functions like patch_7378.py does,
 and we need to add in POST cases for fusecheck failures, so we need to be much
 more aggressive with how we manage code space.
 
-Status: Can boot the system to XeLL, but crashes when trying to start the kernel.
+Status: Works. 17559 boots to dash.
 '''
 
 from patcher import *
@@ -17,6 +17,10 @@ from patcher import *
 def patch_entry_point(cbb_image: bytes, free_space_area: FreeSpaceArea) -> bytes:
     # POST 0x20 as we start code execution
     cbb_image = make_post_codecave(cbb_image, free_space_area, 0x3ec, 0x20)
+
+    # 0x4e0 does CPU-specific initialization which is not done on 5722 or 9188
+    # it doesn't really matter if we leave it in or not, but let's disable it
+    cbb_image, _ = assemble_nop(cbb_image, 0x4e0)
 
     # POST 0x2F at 0x500
     cbb_image = make_post_codecave(cbb_image, free_space_area, 0x500, 0x2F)
@@ -262,24 +266,6 @@ def patch_cd_jump(cbb_image: bytes):
 
     return cbb_image
 
-def patch_exception_handler(cbb_image: bytes):
-    # basically duplicates the "unexpected IRQ" handler, but with POST code 0x81 ("machine check")
-    new_exception_handler = [
-        0x38, 0x60, 0x00, 0x81, # li r3, 0x81 - this is our POST code
-        0x78, 0x63, 0xc1, 0xc6, # rldicr r3,r3,0x38,0x7
-        0x38, 0x80, 0x02, 0x00, # li r4,0x200
-        0x64, 0x84, 0x80, 0x00, # oris r4,r4,0x8000
-        0x78, 0x84, 0x07, 0xc6, # rldicr r4,r4,0x20,0x1f
-        0x64, 0x84, 0x00, 0x06, # oris r4,r4,r6
-        0xf8, 0x64, 0x10, 0x10, # std r3,(r4)
-        0x38, 0x00, 0x00, 0x00, # li r0,0x00
-        0x7c, 0x18, 0x23, 0xa6, # mtspr CMPE,r0
-        0x4b, 0xff, 0xff, 0xf8, # b -8
-    ]
-
-    cbb_image[0x780:0x780+len(new_exception_handler)] = new_exception_handler
-
-    return cbb_image
 
 def do_patches(cbb_image: bytes) -> bytes:
     # free space candidate @ 0x8f44-0x9050
@@ -300,8 +286,6 @@ def do_patches(cbb_image: bytes) -> bytes:
     cbb_image = patch_hwinit_proxy(cbb_image, free_space_area)
     cbb_image = patch_cd_load_and_jump(cbb_image, free_space_area)
     cbb_image = patch_cd_jump(cbb_image)
-    cbb_image = patch_exception_handler(cbb_image)
-
 
     # vanity string at end of free space
     vanity_string = b"wurthless elektroniks presents elpiss for xeBuild\x00"

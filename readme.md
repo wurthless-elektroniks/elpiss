@@ -7,8 +7,6 @@ Finally this stupid Xbox 360 revision can be modded.
 This is in an experimental/early stage. Bugs still need to be fixed. You can try it on your system, but I can't guarantee it works in
 a real-world scenario.
 
-**THIS DOES NOT SUPPORT XEBUILD YET!** It crashes if you try. It is only useful for loading XeLL right now.
-
 ## Why doesn't Elpis work with EXT_CLK right now?
 
 CB_B 9188, which current Glitch2 images use, does not support Elpis boards with Samsung SDRAMs.
@@ -46,18 +44,17 @@ so someone had to dive into it.
 
 ## How do I use it?
 
-### Building
+### XeLL image
 
 1. `python3 patch_7378.py`
 2. Feed `cbb_7378_patched.bin` into the ECC builder of your choice.
 
-### XeLL image
-
-Use `elpis_glitch2.ecc` with J-Runner by selecting Nand -> Load Glitch2 XeLL. Remember to back up your NAND first!
+Alternatively, you can use `elpis_glitch2.ecc` with J-Runner by selecting Nand -> Load Glitch2 XeLL. Remember to back up your NAND first!
 
 ### XeBuild
 
-Not done yet. The patch is still a work in progress. If you try using the patched 7378, it will crash.
+1. `python3 patch_7378_xebuild`
+2. Rest of steps todo.
 
 ## Okay, cool. When can we expect this to be widely supported/added to J-Runner?
 

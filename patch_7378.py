@@ -162,7 +162,11 @@ def patch_cd_jump(cbb_image: bytes):
     assemble_branch(cbb_image, 0xE20, cdjump_preamble_inject_point)
 
 def patch_exception_handler(cbb_image: bytes):
-    # basically duplicates the "unexpected IRQ" handler, but with POST code 0x81 ("machine check")
+    # basically duplicates the "unexpected IRQ" handler, but with POST code 0x81 ("machine check").
+    #
+    # do NOT use this exception handler with xeBuild!
+    # the kernel expects it to have been left alone.
+    # if you try, it'll halt at startup and not boot at all!
     new_exception_handler = [
         0x38, 0x60, 0x00, 0x81, # li r3, 0x81 - this is our POST code
         0x78, 0x63, 0xc1, 0xc6, # rldicr r3,r3,0x38,0x7
