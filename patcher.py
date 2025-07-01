@@ -32,6 +32,9 @@ class FreeSpaceArea():
         print(f"create_func_and_set_head: {name} 0x{self._head:04x} -> 0x{end_head:04x}")
         self._head = end_head
 
+    def create_func_at_address(self, name: str, address: int):
+        self._function_map[name] = address
+
 def assert_address_32bit_aligned(address: int):
     if (address & 3) != 0:
         raise RuntimeError(f"address not 32-bit aligned: {address:08x}")
