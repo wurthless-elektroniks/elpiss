@@ -13,6 +13,7 @@ Status: Works. 17559 boots to dash.
 '''
 
 from patcher import *
+from xebuildgen import xebuild_patchlist_make
 
 def patch_entry_point(cbb_image: bytes, free_space_area: FreeSpaceArea) -> bytes:
     # POST 0x20 as we start code execution
@@ -300,6 +301,8 @@ def main():
     with open("cbb_7378_clean.bin", "rb") as f:
         cbb_image = f.read()
 
+
+    cbb_image_orig = bytearray(cbb_image)
     cbb_image = bytearray(cbb_image)
 
     # apply patches
@@ -308,7 +311,33 @@ def main():
     # produce xebuild binary as debugging artifact
     with open("cbb_7378_xebuild.bin", "wb") as f:
         f.write(cbb_image)
+        print("produced debug artifact: cbb_7378_xebuild.bin")
 
+    xebuild_patchlist = xebuild_patchlist_make(cbb_image_orig, cbb_image)
+
+    with open("cbb_7378_xebuild_patchlist.bin", "wb") as f:
+        f.write(xebuild_patchlist)
+        print("produced debug artifact: cbb_7378_xebuild_patchlist.bin")
+
+    patchfile_versions = [ 6717, 9199, 13604, 17559 ]
+    for version in patchfile_versions:
+        with open(f"xebuild_common_{version}.bin", "rb") as f:
+            common_patches = f.read()
+        
+        # the proper way to do this, obvs
+        fout = f"xebuild/{version}/bin/patches_g2xenon.bin"
+        with open(fout, "wb") as f:
+            f.write(xebuild_patchlist)
+            f.write(common_patches)
+            print(f"produced xebuild patch: {fout}")
+    
+        # the jank way to do it: just use 7378 for Falcon builds
+        fout = f"xebuild_jank/{version}/bin/patches_g2falcon.bin"
+        with open(fout, "wb") as f:
+            f.write(xebuild_patchlist)
+            f.write(common_patches)
+            print(f"produced xebuild patch: {fout}")
+    
 
 if __name__ == '__main__':
     main()

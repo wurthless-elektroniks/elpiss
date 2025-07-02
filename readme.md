@@ -53,8 +53,16 @@ Alternatively, you can use `elpis_glitch2.ecc` with J-Runner by selecting Nand -
 
 ### XeBuild
 
-1. `python3 patch_7378_xebuild`
-2. Rest of steps todo.
+Run `python3 patch_7378_xebuild.py` to produce the following:
+
+- `cbb_7378_xebuild.bin`: Patched version of the CB_B for xeBuild scenarios
+- `cbb_7378_xebuild_patchlist.bin`: Patchlist that will be combined with the `xebuild_common_<kernel_version>.bin` files
+- `xebuild/<kernel_version>/bin/patches_g2xenon.bin`: Full patchlist file for xeBuild, for that particular kernel
+- `xebuild_jank/<kernel_version>/bin/patches_g2falcon.bin`: The same as patches_g2xenon.bin but for jank applications.
+
+The `xebuild_jank` directory is designed to be pasted on top of an existing J-Runner install. Paste its contents on top of
+the contents of your xeBuild directory and CB_B 7378 will be used when making Falcon builds. (J-Runner uses the Falcon
+bootloaders for Xenon Glitch2 builds.)
 
 ## Okay, cool. When can we expect this to be widely supported/added to J-Runner?
 
