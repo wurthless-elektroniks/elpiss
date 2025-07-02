@@ -95,6 +95,8 @@ Happy modding!
 - GliGli and team for the original hacked CB_B 9188, which I used as reference against 7378
 - Octal450 and other contributors to XenonLibrary, for explaining what the POST codes mean
 - Nadaman for providing a XeLL build that wouldn't crash when connecting Ethernet
+- 15432 for his RGH3 image builder, which I used a lot in development
+- Tiros for NandPro, which was also used for building test images
 - Whoever was dumb enough to leak a production-only CB_B with all the POST codes enabled
 
 ## License
