@@ -64,6 +64,11 @@ The `xebuild_jank` directory is designed to be pasted on top of an existing J-Ru
 the contents of your xeBuild directory and CB_B 7378 will be used when making Falcon builds. (J-Runner uses the Falcon
 bootloaders for Xenon Glitch2 builds.)
 
+**If you choose to use the jank approach, remember to back up the existing xeBuild directory first.** If you keep the contents
+in place, then 7378 will be used for Falcon builds. The RGH1.2 timing files aren't tuned for it, so you will get slower boots
+on Falcon, if the system even boots at all. The jank files are only provided so that they can be used until J-Runner supports
+7378 properly.
+
 ## Okay, cool. When can we expect this to be widely supported/added to J-Runner?
 
 When enough people test it and any bugs that exist are fixed. I only have one Elpis, and thank the good
@@ -97,6 +102,7 @@ Happy modding!
 - Nadaman for providing a XeLL build that wouldn't crash when connecting Ethernet
 - 15432 for his RGH3 image builder, which I used a lot in development
 - Tiros for NandPro, which was also used for building test images
+- c0z and other contributors to xeBuild (please open source it before the world explodes)
 - Whoever was dumb enough to leak a production-only CB_B with all the POST codes enabled
 
 ## License
